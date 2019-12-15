@@ -1,6 +1,7 @@
 const request = require("request-promise-native");
 const CryptoJS = require('crypto-js');
 const querystring = require('querystring');
+const fs = require('fs');
 
 const readline = require('readline').createInterface({
     input: process.stdin,
@@ -20,12 +21,14 @@ async function askForKeys() {
             try {
                 const balance = await getBalance();
                 if (balance.includes('html')) {
+                    fs.writeFileSync(process.cwd() + '/log.txt', balance);
                     throw 'Invalid keys';
                 }
                 console.log('Success');
             } catch (e) {
+                fs.writeFileSync(process.cwd() + '/log.txt', JSON.stringify(e));
                 console.log('Error');
-                console.log(e);
+                console.log(e.error);
             }
 
             await askForKeys();
@@ -43,7 +46,8 @@ function privateGet(url, payload) {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': publicKey,
-            'Signature': CryptoJS.HmacSHA256(querystring.stringify(payload), privateKey).toString(CryptoJS.enc.Hex)
+            'Signature': CryptoJS.HmacSHA256(querystring.stringify(payload), privateKey).toString(CryptoJS.enc.Hex),
+            'X-Requested-With' : 'XMLHttpRequest'
         }
     };
     return request.get(url + '?' + querystring.stringify(payload), config);
