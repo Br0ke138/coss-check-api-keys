@@ -25,7 +25,7 @@ async function askForKeys() {
                 const balance = await getBalance(now);
                 if (balance.includes('html')) {
                     const balance2 = await getBalance(serverTimeObj.server_time);
-                    if (balance.includes('html')) {
+                    if (balance2.includes('html')) {
                         fs.writeFileSync(process.cwd() + '/log.txt', balance);
                         throw 'Invalid keys';
                     } else {
