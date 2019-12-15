@@ -20,11 +20,20 @@ async function askForKeys() {
             privateKey = key2
             try {
                 const serverTimeObj = await request.get('https://trade.coss.io/c/api/v1/time', {json: true});
+                const now = Date.now();
                 console.log('Server time: ' + serverTimeObj.server_time);
-                const balance = await getBalance();
+                const balance = await getBalance(now);
                 if (balance.includes('html')) {
-                    fs.writeFileSync(process.cwd() + '/log.txt', balance);
-                    throw 'Invalid keys';
+                    const balance2 = await getBalance(serverTimeObj.server_time);
+                    if (balance.includes('html')) {
+                        fs.writeFileSync(process.cwd() + '/log.txt', balance);
+                        throw 'Invalid keys';
+                    } else {
+                        console.log('Your system time is not correct');
+                        console.log('Coss.io Server Time: ', (new Date(serverTimeObj.server_time)).toTimeString());
+                        console.log('Your Time: ', (new Date(now)).toTimeString());
+                        throw 'Invalid time';
+                    }
                 }
                 console.log('Success');
             } catch (e) {
@@ -38,8 +47,8 @@ async function askForKeys() {
     })
 }
 
-function getBalance() {
-    return privateGet("https://trade.coss.io/c/api/v1/account/balances", {timestamp: Date.now() + 100000, recvWindow: 9999999999});
+function getBalance(timestamp) {
+    return privateGet("https://trade.coss.io/c/api/v1/account/balances", {timestamp: timestamp, recvWindow: 9999999999});
 }
 
 function privateGet(url, payload) {
