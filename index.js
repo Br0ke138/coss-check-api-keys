@@ -19,6 +19,8 @@ async function askForKeys() {
         readline.question(`Enter private key: `, async (key2) => {
             privateKey = key2
             try {
+                const serverTimeObj = await request.get('https://trade.coss.io/c/api/v1/time', {json: true});
+                console.log('Server time: ' + serverTimeObj.server_time);
                 const balance = await getBalance();
                 if (balance.includes('html')) {
                     fs.writeFileSync(process.cwd() + '/log.txt', balance);
@@ -37,10 +39,11 @@ async function askForKeys() {
 }
 
 function getBalance() {
-    return privateGet("https://trade.coss.io/c/api/v1/account/balances", {timestamp: Date.now(), recvWindow: 9999999999});
+    return privateGet("https://trade.coss.io/c/api/v1/account/balances", {timestamp: Date.now() + 100000, recvWindow: 9999999999});
 }
 
 function privateGet(url, payload) {
+    console.log('Request time: ' + payload.timestamp);
     const config = {
         json: true,
         headers: {
